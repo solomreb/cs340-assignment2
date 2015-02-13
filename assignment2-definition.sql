@@ -13,8 +13,14 @@ DROP TABLE IF EXISTS `category_tbl`;
 -- subcategory - a varchar with a maximum length of 255 characters, cannot be null
 -- the combinatino of a name and subcategory must be unique
 
--- Category_tbl creation query replaces this text
 
+CREATE TABLE category_tbl
+(
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(255) NOT NULL,
+ subcategory VARCHAR(255) NOT NULL,
+ CONSTRAINT name_unique UNIQUE (name, subcategory)
+);
 
 -- Create a table called operating_system with the following properties:
 -- id - an auto incrementing integer which is the primary key
@@ -22,7 +28,13 @@ DROP TABLE IF EXISTS `category_tbl`;
 -- version - a varchar of maximum length 255, cannot be null
 -- name version combinations must be unique
 
--- Operating system table creation query replaces this text
+CREATE TABLE operating_system
+(
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(255) NOT NULL,
+ version VARCHAR(255) NOT NULL,
+ CONSTRAINT version_unique UNIQUE (name, version)
+)ENGINE = InnoDB;
 
 
 -- Create a table called device with the following properties:
@@ -32,7 +44,16 @@ DROP TABLE IF EXISTS `category_tbl`;
 -- received - a date type (you can read about it here http://dev.mysql.com/doc/refman/5.0/en/datetime.html)
 -- isbroken - a boolean
 
--- The device table creation query replaces this text
+CREATE TABLE device 
+(
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ cid INT,
+ name VARCHAR(255) NOT NULL,
+ received DATE,
+ isbroken BOOLEAN,
+ FOREIGN KEY(cid) REFERENCES category_tbl(id)
+)ENGINE = InnoDB;
+
 
 
 -- Create a table called os_support with the following properties, this is a table representing a many-to-many relationship
@@ -42,35 +63,56 @@ DROP TABLE IF EXISTS `category_tbl`;
 -- notes - a text type
 -- The primary key is a combination of did and osid
 
--- The os_support table creation query replaces this text
+CREATE TABLE os_support
+(
+    did INT,
+    osid INT,
+    notes TEXT,
+    FOREIGN KEY(did) REFERENCES device(id),
+    FOREIGN KEY(osid) REFERENCES operating_system(id),
+    PRIMARY KEY (did, osid)
+)ENGINE = InnoDB;
 
 
 -- insert the following into the category_tbl table:
 
 -- name: phone
 -- subcategory: maybe a tablet?
+INSERT INTO category_tbl (name, subcategory)
+VALUES ('phone','maybe a tablet?');
+
 
 -- name: tablet
 -- subcategory: but kind of a laptop
 
+INSERT INTO category_tbl (name, subcategory)
+VALUES ('tablet','but kind of a laptop');
+
 -- name: tablet
 -- subcategory: ereader
 
-
+INSERT INTO category_tbl (name, subcategory)
+VALUES ('tablet','ereader');
 
 -- insert the folowing into the operating_system table:
 -- name: Android
 -- version: 1.0
+INSERT INTO operating_system (name, version)
+VALUES ('Android','1.0');
 
 -- name: Android
 -- version: 2.0
+INSERT INTO operating_system (name, version)
+VALUES ('Android','2.0');
 
 -- name: iOS
 -- version: 4.0
+INSERT INTO operating_system (name, version)
+VALUES ('iOS','4.0');
 
 
 
--- insert the following devices instances into the device table (you should use a subquery to set up foriegn keys referecnes, no hard coded numbers):
+-- insert the following devices instances into the device table (you should use a subquery to set up foriegn keys references, no hard coded numbers):
 -- cid - reference to name: phone subcategory: maybe a tablet?
 -- name - Samsung Atlas
 -- received - 1/2/1970
