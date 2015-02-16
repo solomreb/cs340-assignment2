@@ -25,16 +25,39 @@ SELECT a.actor_id, a.first_name, a.last_name, c.name, COUNT(c.name)
 
 #3 Find the first name, last name and total combined film length of Action films for every actor whose last name starts with 'B'.
 #That is the result should list the names of actors and the total lenght of Action films they have been in.(Your query should also list those actors whose last names start with 'B', but never acted in an Action film.)
-SELECT a.first_name, a.last_name, c.name FROM (SELECT * FROM actor a
-    INNER JOIN film_actor fa ON a.actor_id = fa.actor_id
-    INNER JOIN film f ON fa.film_id = f.film_id
-    INNER JOIN film_category fc ON f.film_id = fc.film_id
-    INNER JOIN category c ON fc.category_id=c.category_id) as T1 WHERE T1.last_name LIKE '[B]%' AND
-    T1.name = ACTION;
 
 
+SELECT T1.first_name, T1.last_name, T2.total
+FROM 
+    (SELECT a.first_name, a.last_name, a.actor_id
+     FROM actor a
+     WHERE a.last_name LIKE  'B%') 
+    AS T1
+LEFT JOIN 
+    (SELECT a.first_name, a.last_name, a.actor_id, SUM( f.length ) AS total, c.name
+    FROM actor a, film_actor fa, film f, film_category fc, category c
+    WHERE c.category_id = fc.category_id
+    AND fc.film_id = f.film_id
+    AND a.actor_id = fa.actor_id
+    AND fa.film_id = f.film_id
+    AND c.name =  'action'
+    GROUP BY a.actor_id) 
+    AS T2 
+ON T1.actor_id = T2.actor_id;
 
 #4 Find the first name and last name of all actors who have never been in an Action film that has a length of more than 100 minutes.
+SELECT a.first_name, a.last_name
+FROM actor a
+WHERE a.actor_id NOT IN 
+    (SELECT a.actor_id
+    FROM film f
+    INNER JOIN film_category fc ON f.film_id = fc.film_id
+    INNER JOIN category c ON fc.category_id = c.category_id
+    INNER JOIN film_actor fa ON f.film_id = fa.film_id
+    INNER JOIN actor a ON fa.actor_id = a.actor_id
+    WHERE c.name =  'action'
+    AND f.length >  '100'
+    GROUP BY f.title);
 
 
 
@@ -42,7 +65,7 @@ SELECT a.first_name, a.last_name, c.name FROM (SELECT * FROM actor a
 #Order the results by title, descending (use ORDER BY title DESC at the end of the query)
 #Warning, this is a tricky one and while the syntax is all things you know, you have to think oustide
 #the box a bit to figure out how to get a table that shows pairs of actors in movies
-SELECT * FROM
+SELECT T1.title, T1.first_name, T1.last_name, T2.first_name, T2.last_name FROM
 
 (SELECT film.title, actor.first_name, actor.last_name 
     FROM actor INNER JOIN film_actor ON actor.actor_id = film_actor.actor_id
@@ -51,11 +74,12 @@ SELECT * FROM
 
 INNER JOIN
 
-(SELECT film.title actor.first_name, actor.last_name 
+(SELECT film.title, actor.first_name, actor.last_name 
     FROM actor INNER JOIN film_actor ON actor.actor_id = film_actor.actor_id
     INNER JOIN film ON film_actor.film_id = film.film_id
-    WHERE actor.first_name = 'WARREN' AND actor.last_name='NOLTE') as T2 ON T1.title = T2.title;
+    WHERE actor.first_name = 'WARREN' AND actor.last_name='NOLTE') as T2
 
+ON T1.title = T2.title;
 
 
 
